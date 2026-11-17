@@ -1,0 +1,33 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Boutique de produits digitaux</title><meta name="description" content="Guides, formations et outils numériques à télécharger immédiatement.">
+<link rel="stylesheet" href="style.css"></head><body>
+<nav class="nav"><div class="wrap"><a class="logo" href="index.html" id="shop">Ma Boutique</a></div></nav>
+<header class="hero"><div class="wrap"><h1>Des guides concrets pour passer à l’action</h1><p>Paiement sécurisé, accès immédiat, garantie satisfait ou remboursé.</p></div></header>
+<section><div class="wrap">
+  <div class="tools"><input id="q" type="search" placeholder="Rechercher un produit…" aria-label="Rechercher"></div>
+  <div class="tools" id="chips"></div>
+  <div class="grid" id="list"><p>Chargement…</p></div>
+</div></section>
+<section><div class="wrap"><div class="band"><h2>Reçois nos nouveaux guides en premier</h2><p>Un e‑mail seulement quand un nouveau produit sort.</p>
+<form class="lead-form"><input type="email" name="email" required placeholder="ton@email.com" aria-label="E-mail"><button class="btn alt" type="submit">Je m’inscris</button></form></div></div></section>
+<footer><div class="wrap">© <span id="y"></span> <span class="n"></span> · <a href="#">Mentions légales</a></div></footer>
+<script src="app.js"></script>
+<script>
+$("#shop").textContent=SHOP;$(".n").textContent=SHOP;$("#y").textContent=new Date().getFullYear();
+let all=[],cat="Tous";
+function draw(){
+  const q=$("#q").value.toLowerCase();
+  const r=all.filter(p=>(cat==="Tous"||p.category===cat)&&(p.title+" "+(p.subtitle||"")).toLowerCase().includes(q));
+  $("#list").innerHTML=r.length?r.map(card).join(""):"<p>Aucun produit trouvé.</p>";
+}
+(async()=>{
+  try{
+    all=await sbGet("products?published=eq.true&order=created_at.desc&select=slug,title,subtitle,category,price,old_price,cover_url,rating,reviews_count");
+    const cats=["Tous",...new Set(all.map(p=>p.category).filter(Boolean))];
+    $("#chips").innerHTML=cats.map(c=>`<button class="chip${c==="Tous"?" on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+    $("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;cat=b.dataset.c;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===b));draw();};
+    $("#q").oninput=draw;draw();
+  }catch(e){$("#list").innerHTML="<p>Impossible de charger les produits. Vérifie app.js.</p>"}
+})();
+bindLeads();
+</script></body></html>
